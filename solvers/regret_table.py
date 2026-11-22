@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def regret_matching(regrets):
     """Turn regret scores into move probabilities."""
     # A positive score means we wish we'd played that move more often.
@@ -15,29 +14,25 @@ def regret_matching(regrets):
 
     return positive_regrets / total
 
-
 class RegretTable:
     def __init__(self):
         # Keep the totals from finished iterations and the changes from this one.
         self.regrets = {}
         self.pending_regrets = {}
-
         self.uniform_sum = {}
         self.linear_sum = {}
         self.pending_strategy = {}
-
         self.iteration = 0
 
     def strategy(self, key, n):
-        """Give the current probabilities for this decision's n legal moves."""
+        """Give current probabilities for this decision's n legal moves."""
         if key not in self.regrets:
-            # First time making this decision. Every move starts at zero regret.
+            # First time making this decision so every move starts at zero regret.
             self.regrets[key] = np.zeros(n)
             self.uniform_sum[key] = np.zeros(n)
             self.linear_sum[key] = np.zeros(n)
 
-        # Read the totals from the last finished iteration. That way, the
-        # probabilities stay fixed while we're still exploring this one.
+        # Read the totals from the last finished iteration so probabilities stay fixed while we're still exploring this one.
         return regret_matching(self.regrets[key])
 
     def add(self, key, regret_delta, own_reach, sigma):
@@ -46,8 +41,7 @@ class RegretTable:
             self.pending_regrets[key] = np.zeros(len(sigma))
 
             # Different hidden cards can lead to the same decision.
-            # Save the strategy once, weighted by how likely our own
-            # earlier moves were to bring us here.
+            # Save the strategy once, weighted by how likely our own earlier moves were to bring us here.
             self.pending_strategy[key] = own_reach * np.asarray(sigma)
 
         # Each visit gives us another regret change to add.
@@ -75,12 +69,13 @@ class RegretTable:
 
     def policy(self, kind):
         """Return the move probabilities for each decision."""
-        if kind == "current":
-            return {
-                key: regret_matching(regrets)
-                for key, regrets in self.regrets.items()
-            }
 
+        # Use the latest regrets for the current strategy or pick the saved totals for the requested average strategy.
+        if kind == "current":
+            result = {}
+            for key, regrets in self.regrets.items():
+                result[key] = regret_matching(regrets)
+            return result
         if kind == "avg_uniform":
             strategy_sums = self.uniform_sum
         elif kind == "avg_linear":
