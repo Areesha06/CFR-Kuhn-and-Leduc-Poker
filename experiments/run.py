@@ -4,6 +4,7 @@ import argparse
 import csv
 from pathlib import Path
 from time import perf_counter
+from games.base import save_policy
 
 from eval.exploitability import exploitability
 from games.kuhn import Kuhn
@@ -86,6 +87,10 @@ def main():
             print(f"{args.game}: saved checkpoint at iteration {iteration}", flush=True)
 
     print(f"Results saved to {path}")
+    # Save the trained bot's move probabilities for the playable demo.
+    policy_path = path.with_name(f"{path.stem}_policy.json")
+    save_policy(table.policy("avg_uniform"), str(policy_path))
+    print(f"Trained policy saved to {policy_path}")
 
 
 if __name__ == "__main__":
